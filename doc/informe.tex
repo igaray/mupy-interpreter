@@ -1,0 +1,85 @@
+
+\documentclass [a4paper,titlepage]{report}
+%\pagestyle{plain}
+\usepackage{makeidx}
+\usepackage[spanish]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumerate}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{ucs}
+\usepackage{textcomp}
+\usepackage{alltt}
+\usepackage{listings}
+\usepackage{moreverb}
+\usepackage{upquote}
+
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+\title{Proyecto 2\\Compiladores e Intérpretes 2012\\Intérprete $\mu$Py}
+
+\author{Garay, I\~{n}aki LU 67387}
+
+\makeindex
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+\section{Uso e Invocación}
+
+\section{Componentes léxicos}
+
+\begin{itemize}
+\item Identificadores
+\item Numeros
+\item Strings
+\item Punto
+\item Palabra clave \texttt{print}
+\item Operadores de asignacion
+\item Operadores aritmeticos
+\item Operadores de slice
+\end{itemize}
+
+\section{Gramática}
+
+\begin{verbatim}
+<program>           := <statement_list> .
+
+<statement_list>    := <statement_list> enter <statement>
+<statement_list>    := <statement>
+
+<statement>         := <assignment>
+<statement>         := <print>
+
+<print>             := print <expression>
+
+<assignment>        := id  = <expression>
+                    := id += <expression>
+                    := id *= <expression>
+
+<expression>        := <expression> + <expression>
+                    := <expression> - <expression>
+                    := <expression> * <expression>
+                    := <expression> / <expression>
+                    := id
+                    := id <slice>
+                    := num
+                    := string
+                    := string <slice>
+
+<slice>             := [ <expression> ]
+                    := [ <expression> : <expression> ]
+\end{verbatim}
+
+\section{Definición Dirigida por la Sintaxis}
+
+\section{Detalles de implementación}
+
+\end{document}
