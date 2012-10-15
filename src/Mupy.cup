@@ -1,0 +1,35 @@
+
+<program>           ::= <statement_list> .
+                      ;
+
+<statement_list>    ::= <statement_list> enter <statement>
+                      | <statement>
+                      ;
+
+<statement>         ::= <assignment>
+                      | <print>
+                      ;
+
+<print>             ::= print <expression>
+
+<assignment>        ::= id  = <expression>
+                      | id += <expression>
+                      | id *= <expression>
+                      ;
+
+<expression>        ::= <expression> + <expression>
+                      | <expression> - <expression>
+                      | <expression> * <expression>
+                      | <expression> / <expression>
+                      | id
+                      | id <slice>
+                      | num
+                      | string
+                      | string <slice>
+                      | str <expression>
+                      | ( <expression> )
+                      ;
+
+<slice>             ::= [ <expression> ]
+                      | [ <expression> : <expression> ]
+                      ;S

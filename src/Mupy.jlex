@@ -1,0 +1,68 @@
+//package Project2;
+
+import java.lang.System;
+
+class Main {
+
+    public static void main(String argv[]) throws Exception {
+        Yylex   yy = new Yylex(System.in);
+        Yytoken token;
+        while ((token = yy.yylex()) != null)
+            System.out.println(token);
+        }
+    }
+
+class Yytoken {
+    
+    int    tid;
+    String name;
+    String lexeme;
+    int    line;
+
+    Yytoken(int i, String n, String x, int l) {
+        tid    = i;
+        name   = n;
+        line   = l;
+        lexeme = x;
+        }
+
+    public String toString() {
+        return (String.format("Line: %04d | Token ID: %02d | Name: %s | Lexeme: %s", line, tid, name, lexeme));
+    }
+}
+
+%%
+%yylexthrow{ Exception
+%yylexthrow}
+
+%line
+
+WHITESPACE  = [ \t\r\n\f ]+
+INTLITERAL  = (0|[1-9]([0-9])*)
+IDENTIFIER  = [a-zA-Z_][a-zA-Z_0-9]*
+EMPTYSTRING = \"\"
+STRING      = ({EMPTYSTRING}|\"([^(\n\"\\)]|[\\\\|\\'|\\\"|\\n])*\")
+
+%%
+
+{WHITESPACE} { }
+str          { return new Yytoken( 4, "str        ", yytext(), yyline); }
+print        { return new Yytoken( 5, "print      ", yytext(), yyline); }
+\n           { return new Yytoken( 6, "enter      ", yytext(), yyline); }
+"."          { return new Yytoken( 7, "period     ", yytext(), yyline); }
+"["          { return new Yytoken( 8, "brace_open ", yytext(), yyline); }
+"]"          { return new Yytoken( 9, "brace_close", yytext(), yyline); }
+"("          { return new Yytoken(10, "paren_open ", yytext(), yyline); }
+")"          { return new Yytoken(11, "paren_close", yytext(), yyline); }
+":"          { return new Yytoken(12, "colon      ", yytext(), yyline); }
+"+"          { return new Yytoken(13, "add        ", yytext(), yyline); }
+"-"          { return new Yytoken(14, "sub        ", yytext(), yyline); }
+"*"          { return new Yytoken(15, "mul        ", yytext(), yyline); }
+"/"          { return new Yytoken(16, "div        ", yytext(), yyline); }
+"="          { return new Yytoken(17, "ass        ", yytext(), yyline); }
+"+="         { return new Yytoken(18, "ass_add    ", yytext(), yyline); }
+"*="         { return new Yytoken(19, "ass_mul    ", yytext(), yyline); }
+{STRING}     { return new Yytoken( 3, "string     ", yytext(), yyline); }
+{IDENTIFIER} { return new Yytoken( 2, "identifier ", yytext(), yyline); }
+{INTLITERAL} { return new Yytoken( 1, "integer    ", yytext(), yyline); }
+.            { throw new Exception("Lexical error: " + yytext() + " on line: " + (yyline + 1)); }

@@ -1,3 +1,6 @@
+src/java_cup
+src/jlex-1.2.6.jar
+
 *.class
 
 # Package Files #

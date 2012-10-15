@@ -30,11 +30,9 @@
 
 \tableofcontents
 
-\newpage
+\chapter{Uso e Invocación}
 
-\section{Uso e Invocación}
-
-\section{Componentes léxicos}
+\chapter{Componentes léxicos}
 
 \begin{itemize}
 \item Identificadores
@@ -47,39 +45,63 @@
 \item Operadores de slice
 \end{itemize}
 
-\section{Gramática}
+La siguiente tabla muestra los tokens reconocidos por el analizador léxico.
+
+\begin{longtable}{l | l | l}
+\bfseries{Token}     & \bfseries{Expresión Regular}                                          & \bfseries{Ejemplo}                \tabularnewline \endhead
+TK\_IDENTIFIER       & [a-zA-Z\_{}\textbackslash{}\${}][a-zA-Z\_{}\textbackslash{}\${}0-9]*  & identifier                        \tabularnewline
+TK\_INTEGER          & (0\textbar{}[1-9]([0-9])*)                                            & 42                                \tabularnewline
+TK\_STRING           & (\textbackslash{}"\textbackslash{}"\textbar{}\textbackslash{}"([\^{}(\textbackslash{}"\textbackslash{}\textbackslash{})]\textbar{}[\textbackslash{}\textbackslash{}\textbackslash{}\textbackslash{}\textbar{}\textbackslash{}\textbackslash{}'\textbar{}\textbackslash{}\textbackslash{}\textbackslash{}"\textbar{}\textbackslash{}\textbackslash{}n])*\textbackslash{}") & \textquotedbl{}s\textquotedbl{}   \tabularnewline
+TK\_BRACKET\_OPEN    & \textbackslash{}[                                                     & [                                 \tabularnewline
+TK\_BRACKET\_CLOSE   & \textbackslash{}]                                                     & ]                                 \tabularnewline
+TK\_PAREN\_OPEN      & \textbackslash{})                                                     & (                                 \tabularnewline
+TK\_PAREN\_CLOSE     & \textbackslash{}(                                                     & )                                 \tabularnewline
+TK\_PERIOD           & .                                                                     & .                                 \tabularnewline
+TK\_ASSIGNMENT       & =                                                                     & =                                 \tabularnewline
+TK\_ASSIGNMENT\_ADD  & +=                                                                    & =                                 \tabularnewline
+TK\_ASSIGNMENT\_MUL  & *=                                                                    & =                                 \tabularnewline
+TK\_ADD              & +                                                                     & +                                 \tabularnewline
+TK\_SUB              & -                                                                     & -                                 \tabularnewline
+TK\_MUL              & *                                                                     & *                                 \tabularnewline
+TK\_DIV              & \textbackslash{}/                                                     & /                                 \tabularnewline
+TK\_PRINT            & print                                                                 & print                             \tabularnewline
+\end{longtable}
+
+\chapter{Gramática}
 
 \begin{verbatim}
 <program>           := <statement_list> .
 
 <statement_list>    := <statement_list> enter <statement>
-<statement_list>    := <statement>
+                     | <statement>
 
 <statement>         := <assignment>
-<statement>         := <print>
+                     | <print>
 
 <print>             := print <expression>
 
 <assignment>        := id  = <expression>
-                    := id += <expression>
-                    := id *= <expression>
+                     | id += <expression>
+                     | id *= <expression>
 
 <expression>        := <expression> + <expression>
-                    := <expression> - <expression>
-                    := <expression> * <expression>
-                    := <expression> / <expression>
-                    := id
-                    := id <slice>
-                    := num
-                    := string
-                    := string <slice>
+                     | <expression> - <expression>
+                     | <expression> * <expression>
+                     | <expression> / <expression>
+                     | id
+                     | id <slice>
+                     | num
+                     | string
+                     | string <slice>
+                     | str <expression>
+                     | ( <expression> )
 
 <slice>             := [ <expression> ]
-                    := [ <expression> : <expression> ]
+                     | [ <expression> : <expression> ]
 \end{verbatim}
 
-\section{Definición Dirigida por la Sintaxis}
+\chapter{Definición Dirigida por la Sintaxis}
 
-\section{Detalles de implementación}
+\chapter{Detalles de implementación}
 
 \end{document}
