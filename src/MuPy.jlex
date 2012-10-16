@@ -1,11 +1,19 @@
+package MuPy;
+
 import java.lang.System;
 import java_cup.runtime.Symbol;
+import MuPy.SymbolTable;
+import MuPy.OurSymbol;
 
 %%
 %cup
 %line
 %yylexthrow{ Exception
 %yylexthrow}
+%yyeof
+%eofval{
+return new Symbol(sym.EOF, 0, 0);
+%eofval}
 
 WHITESPACE  = [ \t\r\f ]+
 INTLITERAL  = (0|[1-9]([0-9])*)
@@ -16,23 +24,23 @@ STRING      = ({EMPTYSTRING}|\"([^(\n\"\\)]|[\\\\|\\'|\\\"|\\n])*\")
 %%
 
 {WHITESPACE} { }
-\n           { return new Symbol(sym.ENTER,       yyline, 0); }
-str          { return new Symbol(sym.STR,         yyline, 0); }
-print        { return new Symbol(sym.PRINT,       yyline, 0); }
-"."          { return new Symbol(sym.PERIOD,      yyline, 0); }
-"["          { return new Symbol(sym.BRACE_OPEN,  yyline, 0); }
-"]"          { return new Symbol(sym.BRACE_CLOSE, yyline, 0); }
-"("          { return new Symbol(sym.PAREN_OPEN,  yyline, 0); }
-")"          { return new Symbol(sym.PAREN_CLOSE, yyline, 0); }
-":"          { return new Symbol(sym.COLON,       yyline, 0); }
-"+"          { return new Symbol(sym.ADD,         yyline, 0); }
-"-"          { return new Symbol(sym.SUB,         yyline, 0); }
-"*"          { return new Symbol(sym.MUL,         yyline, 0); }
-"/"          { return new Symbol(sym.DIV,         yyline, 0); }
-"="          { return new Symbol(sym.ASS,         yyline, 0); }
-"+="         { return new Symbol(sym.ASS_ADD,     yyline, 0); }
-"*="         { return new Symbol(sym.ASS_MUL,     yyline, 0); }
-{STRING}     { return new Symbol(sym.STRING,      yyline, 0, yytext()); }
-{IDENTIFIER} { return new Symbol(sym.IDENTIFIER,  yyline, 0, yytext()); }
-{INTLITERAL} { return new Symbol(sym.INTEGER,     yyline, new Integer(yytext())); }
+\n           { System.out.println("L:ENTER      "); return new Symbol(sym.ENTER,       yyline, 0); }
+str          { System.out.println("L:STR        "); return new Symbol(sym.STR,         yyline, 0); }
+print        { System.out.println("L:PRINT      "); return new Symbol(sym.PRINT,       yyline, 0); }
+"."          { System.out.println("L:PERIOD     "); return new Symbol(sym.PERIOD,      yyline, 0); }
+"["          { System.out.println("L:BRACE_OPEN "); return new Symbol(sym.BRACE_OPEN,  yyline, 0); }
+"]"          { System.out.println("L:BRACE_CLOSE"); return new Symbol(sym.BRACE_CLOSE, yyline, 0); }
+"("          { System.out.println("L:PAREN_OPEN "); return new Symbol(sym.PAREN_OPEN,  yyline, 0); }
+")"          { System.out.println("L:PAREN_CLOSE"); return new Symbol(sym.PAREN_CLOSE, yyline, 0); }
+":"          { System.out.println("L:COLON      "); return new Symbol(sym.COLON,       yyline, 0); }
+"+"          { System.out.println("L:ADD        "); return new Symbol(sym.ADD,         yyline, 0); }
+"-"          { System.out.println("L:SUB        "); return new Symbol(sym.SUB,         yyline, 0); }
+"*"          { System.out.println("L:MUL        "); return new Symbol(sym.MUL,         yyline, 0); }
+"/"          { System.out.println("L:DIV        "); return new Symbol(sym.DIV,         yyline, 0); }
+"="          { System.out.println("L:ASS        "); return new Symbol(sym.ASS,         yyline, 0); }
+"+="         { System.out.println("L:ASS_ADD    "); return new Symbol(sym.ASS_ADD,     yyline, 0); }
+"*="         { System.out.println("L:ASS_MUL    "); return new Symbol(sym.ASS_MUL,     yyline, 0); }
+{STRING}     { System.out.println("L:STRING     "); return new Symbol(sym.STRING,      yyline, 0, yytext()); }
+{IDENTIFIER} { System.out.println("L:IDENTIFIER "); return new Symbol(sym.IDENTIFIER,  yyline, 0, yytext()); }
+{INTLITERAL} { System.out.println("L:INTEGER    "); return new Symbol(sym.INTEGER,     yyline, new Integer(yytext())); }
 .            { throw new Exception("Lexical error: " + yytext() + " on line: " + (yyline + 1)); }

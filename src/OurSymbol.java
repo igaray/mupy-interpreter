@@ -1,5 +1,7 @@
+package MuPy;
+
 public class OurSymbol {
-    
+
     private String type;
     private String name;
     private Integer value;

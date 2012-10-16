@@ -1,15 +1,21 @@
+package MuPy;
+
 import java.io.*;
 import java.lang.Exception;
 import java_cup.runtime.*;
-import SymbolTable;
+import MuPy.SymbolTable;
+import MuPy.OurSymbol;
 
 action code
 {:
+    public static boolean debug = false;
+
     private SymbolTable table = new SymbolTable();
 :}
 
 parser code
 {:
+
     public static void main(String args[])
     {
         try {
@@ -26,10 +32,10 @@ parser code
     }
 :}
 
-terminal ENTER;
-terminal STR;
 terminal PRINT;
 terminal PERIOD;
+terminal ENTER;
+terminal STR;
 terminal BRACE_OPEN;
 terminal BRACE_CLOSE;
 terminal PAREN_OPEN;
@@ -49,46 +55,145 @@ terminal Integer INTEGER;
 non terminal program;
 non terminal statement_list;
 non terminal statement;
-non terminal assignment;
 non terminal print;
+non terminal assignment;
 non terminal expression;
+non terminal postfix_expression;
 non terminal slice;
+non terminal slice_expression;
 
 precedence left ADD, SUB;
 precedence left MUL, DIV;
 
-program        ::= statement_list PERIOD
-                 ;
+start with program;
 
-statement_list ::= statement_list ENTER statement
-                 | statement
-                 ;
+program
+    ::= statement_list:stmntlst PERIOD ENTER
+    ;
 
-statement      ::= assignment
-                 | print
-                 ;
+statement_list
+    ::= statement:stmnt ENTER statement_list:stmntlst
+    |   
+    ;
 
-print          ::= PRINT expression
-                 ;
+statement
+    ::= print:p
+        {: 
+            if (debug) System.out.println("S:01"); 
+        :}
+    |   assignment:asgnmt
+        {: 
+            if (debug) System.out.println("S:02"); 
+        :}
+    ;
 
-assignment     ::= IDENTIFIER ASS     expression
-                 | IDENTIFIER ASS_ADD expression
-                 | IDENTIFIER ASS_MUL expression
-                 ;
+print   
+    ::= PRINT expression:expr
+        {: 
+            if (debug) System.out.println("S:03");
+        :}
+    ;
 
-expression     ::= expression ADD expression
-                 | expression SUB expression
-                 | expression MUL expression
-                 | expression DIV expression
-                 | IDENTIFIER
-                 | IDENTIFIER slice
-                 | INTEGER
-                 | STRING
-                 | STRING slice
-                 | STR expression
-                 | PAREN_OPEN expression PAREN_CLOSE
-                 ;
+assignment
+    ::= IDENTIFIER:id ASS expression:expr
+        {: 
+            if (debug) System.out.println("S:04");
+            /* 
+            OurSymbol exprsym = table.get(expr);
+            int res = table.addVar(exprsym.getType(), id, exprsym.getValue());
+            switch (res) {
+                case 1: { 
+                    table.setValue(id, exprsym.getValue());
+                    break;
+                    }
+                case 2: {
+                    String type1 = exprsym.getType();
+                    String type2 = table.get(id).getType()
+                    String errormessage = String.format("Incompatible types, cannot assign %s to %s", type1, type2);
+                    throw new Exception(errormessage);
+                    break;
+                }
+            }
+            */
+        :}
+    |   IDENTIFIER:id ASS_ADD expression:expr
+        {: 
+            if (debug) System.out.println("S:05"); 
+        :}
+    |   IDENTIFIER:id ASS_MUL expression:expr
+        {: 
+            if (debug) System.out.println("S:06"); 
+        :}
+        ;
 
-slice          ::= BRACE_OPEN expression BRACE_CLOSE
-                 | BRACE_OPEN expression COLON expression BRACE_CLOSE
-                 ;
+expression
+    ::= expression:expr1 ADD expression:expr2
+        {: 
+            if (debug) System.out.println("S:07"); 
+        :}
+    |   expression:expr1 SUB expression:expr2
+        {: 
+            if (debug) System.out.println("S:08"); 
+        :}
+    |   expression:expr1 MUL expression:expr2
+        {: 
+            if (debug) System.out.println("S:09"); 
+        :}
+    |   expression:expr1 DIV expression:expr2
+        {: 
+            if (debug) System.out.println("S:10"); 
+        :}
+    |   ADD expression:expr
+        {: 
+            if (debug) System.out.println("S:11"); 
+        :}
+    |   SUB expression:expr
+        {: 
+            if (debug) System.out.println("S:12"); 
+        :}
+    |   PAREN_OPEN expression:expr PAREN_CLOSE
+        {: 
+            if (debug) System.out.println("S:13"); 
+        :}
+    |   postfix_expression:pfexpr
+        {: 
+            if (debug) System.out.println("S:14"); 
+        :}
+    ;
+
+postfix_expression
+    ::= IDENTIFIER:id
+        slice:slc
+        {: 
+            if (debug) System.out.println("S:15"); 
+        :}
+    |   INTEGER:intgr
+        {: 
+            if (debug) System.out.println("S:16"); 
+        :}
+    |   STRING:strng
+        {: 
+            if (debug) System.out.println("S:17"); 
+        :}
+    |   STR
+        expression:expr
+        {: 
+            if (debug) System.out.println("S:18"); 
+        :}
+    ;
+
+slice
+    ::= BRACE_OPEN expression:expr slice_expression:sexpr BRACE_CLOSE
+        {: 
+            if (debug) System.out.println("S:19");
+        :}
+    |
+    ;
+
+slice_expression
+    ::= COLON expression:expr
+        {:
+            if (debug) System.out.println("S:20"); 
+        :}
+    |
+    ;

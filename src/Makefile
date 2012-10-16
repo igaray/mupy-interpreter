@@ -1,11 +1,7 @@
-all:
+mupy:
 	java -jar jlex-1.2.6.jar MuPy.jlex
 	java java_cup.Main MuPy.cup
-	javac MuPy.jlex.java
-	javac parser.java
-	javac sym.java
-	javac OurSymbol.java
-	javac SymbolTable.java
+	javac *.java -d .
 
 standalone:
 	java -jar jlex-1.2.6.jar MuPy_standalone.jlex
@@ -15,8 +11,8 @@ standalone:
 	rm -rf standalone/
 
 clean:
-	rm *.class
+	rm -f *.class
+	rm -fr MuPy/
 	rm -f MuPu_standalone.jlex.java
-	rm MuPy.jlex.java
-	rm parser.java
-	rm sym.java
+	rm -f MuPy.jlex.java
+	rm -f parser.java sym.java
