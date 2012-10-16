@@ -1,0 +1,120 @@
+import java.lang.System;
+
+class Main {
+
+    public static void main(String argv[]) throws Exception {
+        Yylex   yy = new Yylex(System.in);
+        Yytoken token;
+        while ((token = yy.yylex()) != null)
+            System.out.println(token);
+        }
+    }
+
+class sym {
+    static public int STR         = 1;
+    static public int PRINT       = 2;
+    static public int PERIOD      = 3;
+    static public int BRACE_OPEN  = 4;
+    static public int BRACE_CLOSE = 5;
+    static public int PAREN_OPEN  = 6;
+    static public int PAREN_CLOSE = 7;
+    static public int COLON       = 8;
+    static public int ADD         = 9;
+    static public int SUB         = 10;
+    static public int MUL         = 11;
+    static public int DIV         = 12;
+    static public int ASS         = 13;
+    static public int ASS_ADD     = 14;
+    static public int ASS_MUL     = 15;
+    static public int STRING      = 16;
+    static public int IDENTIFIER  = 17;
+    static public int INTEGER     = 18;
+    static public int ENTER       = 19;
+
+    static public String s(int i) {
+        String r = "";
+        switch (i) {
+            case  1: { r = "STR        "; break; }
+            case  2: { r = "PRINT      "; break; }
+            case  3: { r = "PERIOD     "; break; }
+            case  4: { r = "BRACE_OPEN "; break; }
+            case  5: { r = "BRACE_CLOSE"; break; }
+            case  6: { r = "PAREN_OPEN "; break; }
+            case  7: { r = "PAREN_CLOSE"; break; }
+            case  8: { r = "COLON      "; break; }
+            case  9: { r = "ADD        "; break; }
+            case 10: { r = "SUB        "; break; }
+            case 11: { r = "MUL        "; break; }
+            case 12: { r = "DIV        "; break; }
+            case 13: { r = "ASS        "; break; }
+            case 14: { r = "ASS_ADD    "; break; }
+            case 15: { r = "ASS_MUL    "; break; }
+            case 16: { r = "STRING     "; break; }
+            case 17: { r = "IDENTIFIER "; break; }
+            case 18: { r = "INTEGER    "; break; }
+            case 19: { r = "ENTER      "; break; }
+        }
+        return r;
+    } 
+}
+
+class Yytoken {
+    
+    int    tid           = -1;
+    int    line          = -1;
+    int    numeric_value = -1;
+    String string_value  = "";
+
+    Yytoken(int id, int line, int numeric_value) {
+        this.tid           = id;
+        this.line          = line;
+        this.numeric_value = numeric_value;
+        }
+
+    Yytoken(int id, int line, int numeric_value, String string_value) {
+        this.tid           = id;
+        this.line          = line;
+        this.numeric_value = numeric_value;
+        this.string_value  = string_value;
+        }
+
+    public String toString() {
+        return (String.format("Line: %04d | Token ID: %02d | Name: %s", line, tid, sym.s(tid)));
+    }
+}
+
+%%
+%line
+
+%yylexthrow{ Exception
+%yylexthrow}
+
+WHITESPACE  = [ \t\r\f ]+
+INTLITERAL  = (0|[1-9]([0-9])*)
+IDENTIFIER  = [a-zA-Z_][a-zA-Z_0-9]*
+EMPTYSTRING = \"\"
+STRING      = ({EMPTYSTRING}|\"([^(\n\"\\)]|[\\\\|\\'|\\\"|\\n])*\")
+
+%%
+
+{WHITESPACE} { }
+\n           { return new Yytoken(sym.ENTER,       yyline, 0); }
+str          { return new Yytoken(sym.STR,         yyline, 0); }
+print        { return new Yytoken(sym.PRINT,       yyline, 0); }
+"."          { return new Yytoken(sym.PERIOD,      yyline, 0); }
+"["          { return new Yytoken(sym.BRACE_OPEN,  yyline, 0); }
+"]"          { return new Yytoken(sym.BRACE_CLOSE, yyline, 0); }
+"("          { return new Yytoken(sym.PAREN_OPEN,  yyline, 0); }
+")"          { return new Yytoken(sym.PAREN_CLOSE, yyline, 0); }
+":"          { return new Yytoken(sym.COLON,       yyline, 0); }
+"+"          { return new Yytoken(sym.ADD,         yyline, 0); }
+"-"          { return new Yytoken(sym.SUB,         yyline, 0); }
+"*"          { return new Yytoken(sym.MUL,         yyline, 0); }
+"/"          { return new Yytoken(sym.DIV,         yyline, 0); }
+"="          { return new Yytoken(sym.ASS,         yyline, 0); }
+"+="         { return new Yytoken(sym.ASS_ADD,     yyline, 0); }
+"*="         { return new Yytoken(sym.ASS_MUL,     yyline, 0); }
+{STRING}     { return new Yytoken(sym.STRING,      yyline, 0, yytext()); }
+{IDENTIFIER} { return new Yytoken(sym.IDENTIFIER,  yyline, 0, yytext()); }
+{INTLITERAL} { return new Yytoken(sym.INTEGER,     yyline, new Integer(yytext())); }
+.            { throw new Exception("Lexical error: " + yytext() + " on line: " + (yyline + 1)); }

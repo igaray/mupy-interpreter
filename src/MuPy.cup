@@ -1,0 +1,94 @@
+import java.io.*;
+import java.lang.Exception;
+import java_cup.runtime.*;
+import SymbolTable;
+
+action code
+{:
+    private SymbolTable table = new SymbolTable();
+:}
+
+parser code
+{:
+    public static void main(String args[])
+    {
+        try {
+            new parser(new Yylex(System.in)).parse();
+        } catch (Exception e)   {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    public void syntax_error(java_cup.runtime.Symbol sym) {
+        System.out.println("Error parsing at line " + (sym.left + 1));
+        System.exit(1);
+    }
+:}
+
+terminal ENTER;
+terminal STR;
+terminal PRINT;
+terminal PERIOD;
+terminal BRACE_OPEN;
+terminal BRACE_CLOSE;
+terminal PAREN_OPEN;
+terminal PAREN_CLOSE;
+terminal COLON;
+terminal ADD;
+terminal SUB;
+terminal MUL;
+terminal DIV;
+terminal ASS;
+terminal ASS_ADD;
+terminal ASS_MUL;
+terminal String  STRING;
+terminal String  IDENTIFIER;
+terminal Integer INTEGER;
+
+non terminal program;
+non terminal statement_list;
+non terminal statement;
+non terminal assignment;
+non terminal print;
+non terminal expression;
+non terminal slice;
+
+precedence left ADD, SUB;
+precedence left MUL, DIV;
+
+program        ::= statement_list PERIOD
+                 ;
+
+statement_list ::= statement_list ENTER statement
+                 | statement
+                 ;
+
+statement      ::= assignment
+                 | print
+                 ;
+
+print          ::= PRINT expression
+                 ;
+
+assignment     ::= IDENTIFIER ASS     expression
+                 | IDENTIFIER ASS_ADD expression
+                 | IDENTIFIER ASS_MUL expression
+                 ;
+
+expression     ::= expression ADD expression
+                 | expression SUB expression
+                 | expression MUL expression
+                 | expression DIV expression
+                 | IDENTIFIER
+                 | IDENTIFIER slice
+                 | INTEGER
+                 | STRING
+                 | STRING slice
+                 | STR expression
+                 | PAREN_OPEN expression PAREN_CLOSE
+                 ;
+
+slice          ::= BRACE_OPEN expression BRACE_CLOSE
+                 | BRACE_OPEN expression COLON expression BRACE_CLOSE
+                 ;

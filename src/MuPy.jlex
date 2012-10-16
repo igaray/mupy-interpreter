@@ -1,0 +1,38 @@
+import java.lang.System;
+import java_cup.runtime.Symbol;
+
+%%
+%cup
+%line
+%yylexthrow{ Exception
+%yylexthrow}
+
+WHITESPACE  = [ \t\r\f ]+
+INTLITERAL  = (0|[1-9]([0-9])*)
+IDENTIFIER  = [a-zA-Z_][a-zA-Z_0-9]*
+EMPTYSTRING = \"\"
+STRING      = ({EMPTYSTRING}|\"([^(\n\"\\)]|[\\\\|\\'|\\\"|\\n])*\")
+
+%%
+
+{WHITESPACE} { }
+\n           { return new Symbol(sym.ENTER,       yyline, 0); }
+str          { return new Symbol(sym.STR,         yyline, 0); }
+print        { return new Symbol(sym.PRINT,       yyline, 0); }
+"."          { return new Symbol(sym.PERIOD,      yyline, 0); }
+"["          { return new Symbol(sym.BRACE_OPEN,  yyline, 0); }
+"]"          { return new Symbol(sym.BRACE_CLOSE, yyline, 0); }
+"("          { return new Symbol(sym.PAREN_OPEN,  yyline, 0); }
+")"          { return new Symbol(sym.PAREN_CLOSE, yyline, 0); }
+":"          { return new Symbol(sym.COLON,       yyline, 0); }
+"+"          { return new Symbol(sym.ADD,         yyline, 0); }
+"-"          { return new Symbol(sym.SUB,         yyline, 0); }
+"*"          { return new Symbol(sym.MUL,         yyline, 0); }
+"/"          { return new Symbol(sym.DIV,         yyline, 0); }
+"="          { return new Symbol(sym.ASS,         yyline, 0); }
+"+="         { return new Symbol(sym.ASS_ADD,     yyline, 0); }
+"*="         { return new Symbol(sym.ASS_MUL,     yyline, 0); }
+{STRING}     { return new Symbol(sym.STRING,      yyline, 0, yytext()); }
+{IDENTIFIER} { return new Symbol(sym.IDENTIFIER,  yyline, 0, yytext()); }
+{INTLITERAL} { return new Symbol(sym.INTEGER,     yyline, new Integer(yytext())); }
+.            { throw new Exception("Lexical error: " + yytext() + " on line: " + (yyline + 1)); }
