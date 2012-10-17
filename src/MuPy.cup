@@ -2,6 +2,7 @@ package MuPy;
 
 import java.io.*;
 import java.lang.Exception;
+import java.lang.String;
 import java_cup.runtime.*;
 import MuPy.SymbolTable;
 import MuPy.OurSymbol;
@@ -10,7 +11,7 @@ action code
 {:
     public static boolean debug = false;
 
-    private SymbolTable table = new SymbolTable();
+    public SymbolTable table = new SymbolTable();
 :}
 
 parser code
@@ -57,10 +58,10 @@ non terminal statement_list;
 non terminal statement;
 non terminal print;
 non terminal assignment;
-non terminal expression;
-non terminal postfix_expression;
-non terminal slice;
-non terminal slice_expression;
+non terminal String expression;
+non terminal String postfix_expression;
+non terminal String slice;
+non terminal String slice_expression;
 
 precedence left ADD, SUB;
 precedence left MUL, DIV;
@@ -91,6 +92,8 @@ print
     ::= PRINT expression:expr
         {: 
             if (debug) System.out.println("S:03");
+            OurSymbol exprsym = table.get(expr);
+            System.out.println(exprsym);
         :}
     ;
 
@@ -98,7 +101,7 @@ assignment
     ::= IDENTIFIER:id ASS expression:expr
         {: 
             if (debug) System.out.println("S:04");
-            /* 
+            /*
             OurSymbol exprsym = table.get(expr);
             int res = table.addVar(exprsym.getType(), id, exprsym.getValue());
             switch (res) {
@@ -108,7 +111,7 @@ assignment
                     }
                 case 2: {
                     String type1 = exprsym.getType();
-                    String type2 = table.get(id).getType()
+                    String type2 = table.get(id).getType();
                     String errormessage = String.format("Incompatible types, cannot assign %s to %s", type1, type2);
                     throw new Exception(errormessage);
                     break;
@@ -166,19 +169,26 @@ postfix_expression
         slice:slc
         {: 
             if (debug) System.out.println("S:15"); 
+            if (! table.isDeclared(id))
+                throw new Exception("Undeclared variable: " + id);
+            RESULT = id;
         :}
     |   INTEGER:intgr
         {: 
-            if (debug) System.out.println("S:16"); 
+            if (debug) System.out.println("S:16");
+            RESULT = table.addAnonymVar("int", intgr);
         :}
     |   STRING:strng
         {: 
             if (debug) System.out.println("S:17"); 
+            RESULT = table.addAnonymVar("string", strng);
         :}
     |   STR
         expression:expr
         {: 
-            if (debug) System.out.println("S:18"); 
+            if (debug) System.out.println("S:18");
+            OurSymbol exprsym = table.get(expr);
+            RESULT = new java.lang.String(exprsym.getIValue());
         :}
     ;
 
