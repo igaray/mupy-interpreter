@@ -9,9 +9,9 @@ import MuPy.OurSymbol;
 
 action code
 {:
-    public static boolean debug = false;
+    private static boolean debug = false;
 
-    public SymbolTable table = new SymbolTable();
+    private SymbolTable st = new SymbolTable();
 :}
 
 parser code
@@ -69,11 +69,18 @@ precedence left MUL, DIV;
 start with program;
 
 program
-    ::= statement_list:stmntlst PERIOD ENTER
+    ::= statement_list:stmntlst 
+        PERIOD 
+        {:
+            st.print();            
+        :}
+        ENTER
     ;
 
 statement_list
-    ::= statement:stmnt ENTER statement_list:stmntlst
+    ::= statement:stmnt 
+        ENTER 
+        statement_list:stmntlst
     |   
     ;
 
@@ -92,8 +99,8 @@ print
     ::= PRINT expression:expr
         {: 
             if (debug) System.out.println("S:03");
-            OurSymbol exprsym = table.get(expr);
-            System.out.println(exprsym);
+            OurSymbol exprsym = st.get(expr);
+            System.out.println(exprsym.getValue().toString());
         :}
     ;
 
@@ -101,23 +108,15 @@ assignment
     ::= IDENTIFIER:id ASS expression:expr
         {: 
             if (debug) System.out.println("S:04");
-            /*
-            OurSymbol exprsym = table.get(expr);
-            int res = table.addVar(exprsym.getType(), id, exprsym.getValue());
-            switch (res) {
-                case 1: { 
-                    table.setValue(id, exprsym.getValue());
-                    break;
-                    }
-                case 2: {
-                    String type1 = exprsym.getType();
-                    String type2 = table.get(id).getType();
-                    String errormessage = String.format("Incompatible types, cannot assign %s to %s", type1, type2);
-                    throw new Exception(errormessage);
-                    break;
-                }
+            OurSymbol sym = st.get(expr);
+            Value     val = sym.getValue();
+
+            if (st.isDeclared(id)) {
+                st.setValue(id, val);
             }
-            */
+            else {
+                int res = st.addVar(id, val);
+            }
         :}
     |   IDENTIFIER:id ASS_ADD expression:expr
         {: 
@@ -148,19 +147,32 @@ expression
         :}
     |   ADD expression:expr
         {: 
-            if (debug) System.out.println("S:11"); 
+            /* This doesn't really do anything.
+             * If the value of the expression is an integer, then
+             * a unary plus will not change its sign or value.
+             * If the value is a string, there is nothing to concatenate
+             * with, although strictly it should emit an error. 
+             */
+            if (debug) System.out.println("S:11");
+            RESULT = expr;
         :}
     |   SUB expression:expr
         {: 
-            if (debug) System.out.println("S:12"); 
+            if (debug) System.out.println("S:12");
+            OurSymbol sym = st.get(expr);
+            if (! sym.getValue().isInt())
+                throw new Exception("Type error: trying to change sign of a non-integer value.");
+            RESULT = st.addAnonVar(new Value( - (Integer)sym.getValue().getValue()) );
         :}
     |   PAREN_OPEN expression:expr PAREN_CLOSE
         {: 
-            if (debug) System.out.println("S:13"); 
+            if (debug) System.out.println("S:13");
+            RESULT = expr; 
         :}
     |   postfix_expression:pfexpr
         {: 
-            if (debug) System.out.println("S:14"); 
+            if (debug) System.out.println("S:14");
+            RESULT = pfexpr;
         :}
     ;
 
@@ -168,27 +180,43 @@ postfix_expression
     ::= IDENTIFIER:id
         slice:slc
         {: 
-            if (debug) System.out.println("S:15"); 
-            if (! table.isDeclared(id))
-                throw new Exception("Undeclared variable: " + id);
-            RESULT = id;
+            if (debug) System.out.println("S:15");
+            if (slc == null) {
+                if (! st.isDeclared(id))
+                    throw new Exception("Unknown variable: " + id);
+                RESULT = id;
+            }
+            else {
+                RESULT = id;
+            }
         :}
     |   INTEGER:intgr
         {: 
             if (debug) System.out.println("S:16");
-            RESULT = table.addAnonymVar("int", intgr);
+            RESULT = st.addAnonVar(new Value(intgr));
         :}
     |   STRING:strng
         {: 
             if (debug) System.out.println("S:17"); 
-            RESULT = table.addAnonymVar("string", strng);
+            RESULT = st.addAnonVar(new Value(strng));
         :}
     |   STR
         expression:expr
         {: 
+            /* First, we check whether the result of evaluating the 
+             * expression expr is in the symbol table.
+             * It always should be, otherwise a parse error ocurred.
+             * Next, we get the corresponding symbol, extract its value, 
+             * convert it into a string, and put the result in an 
+             * anonymous variable in the symbol table.
+             */
             if (debug) System.out.println("S:18");
-            OurSymbol exprsym = table.get(expr);
-            RESULT = new java.lang.String(exprsym.getIValue());
+            if (! st.isDeclared(expr))
+                throw new Exception("Unknown: " + expr);
+            OurSymbol sym = st.get(expr);
+            Value     val = sym.getValue();
+            String    str = val.toString();
+            RESULT = st.addAnonVar(new Value(str));
         :}
     ;
 
@@ -196,6 +224,22 @@ slice
     ::= BRACE_OPEN expression:expr slice_expression:sexpr BRACE_CLOSE
         {: 
             if (debug) System.out.println("S:19");
+            if (sexpr == null) {
+                RETURN = expr;
+            }
+            else {
+                OurSymbol sym1 = st.get(expr);
+                OurSymbol sym2 = st.get(slice_expression);
+                Value     val1 = sym1.getValue();
+                Value     val2 = sym2.getValue();
+                if (! val1.isInt()) {
+                    throw Exception("");
+                }
+                if (! val2.isInt()) {
+                    throw Exception("");
+                }
+                RETURN = RangeValue(0, 0);
+            }
         :}
     |
     ;
@@ -204,6 +248,7 @@ slice_expression
     ::= COLON expression:expr
         {:
             if (debug) System.out.println("S:20"); 
+            RETURN = expr;
         :}
     |
     ;

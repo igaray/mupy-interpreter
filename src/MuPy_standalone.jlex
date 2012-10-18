@@ -66,14 +66,17 @@ class Yytoken {
     int    line          = -1;
     int    numeric_value = -1;
     String string_value  = "";
+    String lex           = "";
 
-    Yytoken(int id, int line, int numeric_value) {
+    Yytoken(int id, int line, String lex, int numeric_value) {
+        this.lex           = lex;
         this.tid           = id;
         this.line          = line;
         this.numeric_value = numeric_value;
         }
 
-    Yytoken(int id, int line, int numeric_value, String string_value) {
+    Yytoken(int id, int line, String lex, int numeric_value, String string_value) {
+        this.lex           = lex;
         this.tid           = id;
         this.line          = line;
         this.numeric_value = numeric_value;
@@ -81,7 +84,7 @@ class Yytoken {
         }
 
     public String toString() {
-        return (String.format("Line: %04d | Token ID: %02d | Name: %s", line, tid, sym.s(tid)));
+        return (String.format("Line: %04d | Token ID: %02d | Name: %s | Lexeme: %s", line, tid, sym.s(tid), lex));
     }
 }
 
@@ -100,23 +103,23 @@ STRING      = ({EMPTYSTRING}|\"([^(\n\"\\)]|[\\\\|\\'|\\\"|\\n])*\")
 %%
 
 {WHITESPACE} { }
-\n           { return new Yytoken(sym.ENTER,       yyline, 0); }
-str          { return new Yytoken(sym.STR,         yyline, 0); }
-print        { return new Yytoken(sym.PRINT,       yyline, 0); }
-"."          { return new Yytoken(sym.PERIOD,      yyline, 0); }
-"["          { return new Yytoken(sym.BRACE_OPEN,  yyline, 0); }
-"]"          { return new Yytoken(sym.BRACE_CLOSE, yyline, 0); }
-"("          { return new Yytoken(sym.PAREN_OPEN,  yyline, 0); }
-")"          { return new Yytoken(sym.PAREN_CLOSE, yyline, 0); }
-":"          { return new Yytoken(sym.COLON,       yyline, 0); }
-"+"          { return new Yytoken(sym.ADD,         yyline, 0); }
-"-"          { return new Yytoken(sym.SUB,         yyline, 0); }
-"*"          { return new Yytoken(sym.MUL,         yyline, 0); }
-"/"          { return new Yytoken(sym.DIV,         yyline, 0); }
-"="          { return new Yytoken(sym.ASS,         yyline, 0); }
-"+="         { return new Yytoken(sym.ASS_ADD,     yyline, 0); }
-"*="         { return new Yytoken(sym.ASS_MUL,     yyline, 0); }
-{STRING}     { return new Yytoken(sym.STRING,      yyline, 0, yytext()); }
-{IDENTIFIER} { return new Yytoken(sym.IDENTIFIER,  yyline, 0, yytext()); }
-{INTLITERAL} { return new Yytoken(sym.INTEGER,     yyline, new Integer(yytext())); }
+\n           { return new Yytoken(sym.ENTER,       yyline, yytext(), 0); }
+str          { return new Yytoken(sym.STR,         yyline, yytext(), 0); }
+print        { return new Yytoken(sym.PRINT,       yyline, yytext(), 0); }
+"."          { return new Yytoken(sym.PERIOD,      yyline, yytext(), 0); }
+"["          { return new Yytoken(sym.BRACE_OPEN,  yyline, yytext(), 0); }
+"]"          { return new Yytoken(sym.BRACE_CLOSE, yyline, yytext(), 0); }
+"("          { return new Yytoken(sym.PAREN_OPEN,  yyline, yytext(), 0); }
+")"          { return new Yytoken(sym.PAREN_CLOSE, yyline, yytext(), 0); }
+":"          { return new Yytoken(sym.COLON,       yyline, yytext(), 0); }
+"+"          { return new Yytoken(sym.ADD,         yyline, yytext(), 0); }
+"-"          { return new Yytoken(sym.SUB,         yyline, yytext(), 0); }
+"*"          { return new Yytoken(sym.MUL,         yyline, yytext(), 0); }
+"/"          { return new Yytoken(sym.DIV,         yyline, yytext(), 0); }
+"="          { return new Yytoken(sym.ASS,         yyline, yytext(), 0); }
+"+="         { return new Yytoken(sym.ASS_ADD,     yyline, yytext(), 0); }
+"*="         { return new Yytoken(sym.ASS_MUL,     yyline, yytext(), 0); }
+{STRING}     { return new Yytoken(sym.STRING,      yyline, yytext(), 0, yytext()); }
+{IDENTIFIER} { return new Yytoken(sym.IDENTIFIER,  yyline, yytext(), 0, yytext()); }
+{INTLITERAL} { return new Yytoken(sym.INTEGER,     yyline, yytext(), new Integer(yytext())); }
 .            { throw new Exception("Lexical error: " + yytext() + " on line: " + (yyline + 1)); }

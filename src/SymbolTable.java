@@ -4,11 +4,22 @@ import java.security.SecureRandom;
 import java.math.BigInteger;
 import java.util.LinkedList;
 
+class RangeValue {
+
+    public int index1 = 0;
+    public int index2 = 0;
+
+    public RangeValue(int i1, int i2) {
+        index1 = i1;
+        index2 = i2;
+    }
+}
+
 class Value {
 
     private String  type;
     private String  svalue = "";
-    private Integer ivalue = 0;
+    private Integer ivalue = new Integer(0);
 
     public Value(String  v) { type = "string"; svalue = v; }
     public Value(Integer v) { type = "int";    ivalue = v; }
@@ -25,8 +36,8 @@ class Value {
 
     public String toString() {
         String s = null;
-        if (type == "string") { s = svalue; }
-        if (type == "int"   ) { s = ivalue.toString(); }
+        if (type == "string") { s = svalue;             }
+        if (type == "int"   ) { s = ivalue.toString();  }
         return s;
     }
 
@@ -147,7 +158,7 @@ class SymbolTable {
         String    type        = "";
         String    valuestring = ""; // string representation of the value contents
         String    stringvalue = ""; // string value
-        Integer   intvalue;    // integer value
+        Integer   intvalue;         // integer value
 
         for (int i = 0; i < table.size(); i++) {
             symbol = table.get(i);
@@ -173,9 +184,12 @@ class SymbolTable {
             x[2] = valuestring;
             symbolStrings.add(x);
         }
+
+        System.out.println("SYMBOL TABLE CONTENTS:");
+        System.out.print(String.format("%-"+nameMaxLength+"s\t| TYPE   | %-"+valueMaxLength+"s\n", "NAME", "VALUE"));
         for (int i = 0; i < symbolStrings.size(); i++) {
             x = symbolStrings.get(i);            
-            System.out.print(String.format("Name: %"+nameMaxLength+"s\t| Type: %6s\t| Value: %"+valueMaxLength+"s\n", x[0], x[1], x[2]));
+            System.out.print(String.format("%-"+nameMaxLength+"s\t| %-6s | %-"+valueMaxLength+"s\n", x[0], x[1], x[2]));
         }
     }
 }

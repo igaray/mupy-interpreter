@@ -1,0 +1,6 @@
+id = 1
+id = 2
+print 42
+id2 = 66
+id2 = id
+.

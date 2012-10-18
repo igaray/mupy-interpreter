@@ -1,5 +1,7 @@
 src/java_cup
 src/jlex-1.2.6.jar
+mupy.sublime-project
+mupy.sublime-workspace
 
 *.class
 
