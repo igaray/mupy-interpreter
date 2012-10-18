@@ -99,8 +99,8 @@ print
     ::= PRINT expression:expr
         {: 
             if (debug) System.out.println("S:03");
-            OurSymbol exprsym = st.get(expr);
-            System.out.println(exprsym.getValue().toString());
+            OurSymbol sym = st.get(expr);
+            System.out.println(sym.getValue().toString());
         :}
     ;
 
@@ -131,19 +131,82 @@ assignment
 expression
     ::= expression:expr1 ADD expression:expr2
         {: 
-            if (debug) System.out.println("S:07"); 
+            if (debug) System.out.println("S:07");
+            OurSymbol sym1 = st.get(expr1);
+            OurSymbol sym2 = st.get(expr2);
+            Value     val1 = sym1.getValue();
+            Value     val2 = sym2.getValue();
+            String   type1 = val1.getType();
+            String   type2 = val2.getType();
+
+            if (type1 != type2) {
+                throw Exception("Error: cannot add a string to an integer.");
+            }
+            if (val1.isInt() && val2.isInt()) {
+                // add the two integers
+                Integer result = val1.getValue() + val2.getValue();
+                RESULT = st.addAnonVar(new Value(result));
+            }
+            if (val1.isString() && val2.isString()) {
+                // concatenate the two strings
+                String  result = val1.getValue() + val2.getValue();
+                RESULT = st.addAnonVar(new Value(result));
+            }
         :}
     |   expression:expr1 SUB expression:expr2
         {: 
             if (debug) System.out.println("S:08"); 
+            OurSymbol sym1 = st.get(expr1);
+            OurSymbol sym2 = st.get(expr2);
+            Value     val1 = sym1.getValue();
+            Value     val2 = sym2.getValue();
+            String   type1 = val1.getType();
+            String   type2 = val2.getType();
+            if (val1.isInt() && val2.isInt()) {
+                Integer result = val1.getValue() - val2.getValue();
+                RESULT = st.addAnonVar(new Value(result));
+            }
+            else {
+                throw Exception("Type error: operands are not integers.");
+            }
         :}
     |   expression:expr1 MUL expression:expr2
         {: 
             if (debug) System.out.println("S:09"); 
+            OurSymbol sym1 = st.get(expr1);
+            OurSymbol sym2 = st.get(expr2);
+            Value     val1 = sym1.getValue();
+            Value     val2 = sym2.getValue();
+            String   type1 = val1.getType();
+            String   type2 = val2.getType();
+
+            // TODO
+            if (val1.isInt() && val2.isInt()) {
+                Integer result = val1.getValue() * val2.getValue();
+                RESULT = st.addAnonVar(new Value(result));
+            }
+            if (val1.isString() && val2.isString()) {
+                String  result = val1.getValue() + val2.getValue();
+                RESULT = st.addAnonVar(new Value(result));
+            }
         :}
     |   expression:expr1 DIV expression:expr2
         {: 
             if (debug) System.out.println("S:10"); 
+            OurSymbol sym1 = st.get(expr1);
+            OurSymbol sym2 = st.get(expr2);
+            Value     val1 = sym1.getValue();
+            Value     val2 = sym2.getValue();
+            String   type1 = val1.getType();
+            String   type2 = val2.getType();
+            if (val1.isInt() && val2.isInt()) {
+                // add the two integers
+                Integer result = val1.getValue() / val2.getValue();
+                RESULT = st.addAnonVar(new Value(result));
+            }
+            else {
+                throw Exception("Type error: operands are not integers.");
+            }
         :}
     |   ADD expression:expr
         {: 
@@ -211,8 +274,6 @@ postfix_expression
              * anonymous variable in the symbol table.
              */
             if (debug) System.out.println("S:18");
-            if (! st.isDeclared(expr))
-                throw new Exception("Unknown: " + expr);
             OurSymbol sym = st.get(expr);
             Value     val = sym.getValue();
             String    str = val.toString();
