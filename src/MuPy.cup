@@ -60,7 +60,7 @@ non terminal print;
 non terminal assignment;
 non terminal String expression;
 non terminal String postfix_expression;
-non terminal String slice;
+non terminal RangeValue slice;
 non terminal String slice_expression;
 
 precedence left ADD, SUB;
@@ -71,141 +71,145 @@ start with program;
 program
     ::= statement_list:stmntlst 
         PERIOD 
-        {:
-            st.print();            
-        :}
         ENTER
     ;
 
 statement_list
     ::= statement:stmnt 
         ENTER 
+        {: 
+            if (debug) { st.print(); }
+            st.clearAnonVars();     
+        :}
         statement_list:stmntlst
     |   
     ;
 
 statement
     ::= print:p
-        {: 
-            if (debug) System.out.println("S:01"); 
-        :}
     |   assignment:asgnmt
-        {: 
-            if (debug) System.out.println("S:02"); 
-        :}
     ;
 
 print   
     ::= PRINT expression:expr
         {: 
-            if (debug) System.out.println("S:03");
-            OurSymbol sym = st.get(expr);
-            System.out.println(sym.getValue().toString());
+            System.out.println(st.get(expr).getValue().toString());
         :}
     ;
 
 assignment
     ::= IDENTIFIER:id ASS expression:expr
         {: 
-            if (debug) System.out.println("S:04");
-            OurSymbol sym = st.get(expr);
-            Value     val = sym.getValue();
+            Value val = st.get(expr).getValue();
 
             if (st.isDeclared(id)) {
                 st.setValue(id, val);
             }
             else {
-                int res = st.addVar(id, val);
+                st.addVar(id, val);
             }
         :}
     |   IDENTIFIER:id ASS_ADD expression:expr
-        {: 
-            if (debug) System.out.println("S:05"); 
+        {:
+            if (! st.isDeclared(id)) {
+                throw new Exception("Error: variable "+id+" is not declared.");
+            }
+
+            Value val1 = st.get(id).getValue();
+            Value val2 = st.get(expr).getValue();
+
+            if (!val1.isInt()) {
+                throw new Exception("Error: variable "+id+" does not hold an integer value.");
+            }
+            if (!val2.isInt()) {
+                throw new Exception("Error: assignment expression does not evaluate to an integer value.");
+            }
+            st.setValue(id, new Value(val1.getIntValue() + val2.getIntValue()));
         :}
     |   IDENTIFIER:id ASS_MUL expression:expr
-        {: 
-            if (debug) System.out.println("S:06"); 
+        {:
+            if (! st.isDeclared(id)) {
+                throw new Exception("Error: variable "+id+" is not declared.");
+            }
+
+            Value val1 = st.get(id).getValue();
+            Value val2 = st.get(expr).getValue();
+
+            if (!val1.isInt()) {
+                throw new Exception("Error: variable "+id+" does not hold an integer value.");
+            }
+            if (!val2.isInt()) {
+                throw new Exception("Error: assignment expression does not evaluate to an integer value.");
+            }
+            st.setValue(id, new Value(val1.getIntValue() * val2.getIntValue()));        
         :}
         ;
 
 expression
     ::= expression:expr1 ADD expression:expr2
         {: 
-            if (debug) System.out.println("S:07");
-            OurSymbol sym1 = st.get(expr1);
-            OurSymbol sym2 = st.get(expr2);
-            Value     val1 = sym1.getValue();
-            Value     val2 = sym2.getValue();
-            String   type1 = val1.getType();
-            String   type2 = val2.getType();
+            Value val1 = st.get(expr1).getValue();
+            Value val2 = st.get(expr2).getValue();
 
-            if (type1 != type2) {
-                throw Exception("Error: cannot add a string to an integer.");
+            if (val1.getType() != val2.getType()) {
+                throw new Exception("Error: cannot add a string to an integer.");
             }
-            if (val1.isInt() && val2.isInt()) {
-                // add the two integers
-                Integer result = val1.getValue() + val2.getValue();
-                RESULT = st.addAnonVar(new Value(result));
+            if (val1.isInt()) {
+                RESULT = st.addAnonVar(new Value(val1.getIntValue() + val2.getIntValue()));
+            } else if (val1.isString()) {
+                RESULT = st.addAnonVar(new Value(val1.getStringValue() + val2.getStringValue()));
             }
-            if (val1.isString() && val2.isString()) {
-                // concatenate the two strings
-                String  result = val1.getValue() + val2.getValue();
-                RESULT = st.addAnonVar(new Value(result));
-            }
+
         :}
     |   expression:expr1 SUB expression:expr2
-        {: 
-            if (debug) System.out.println("S:08"); 
-            OurSymbol sym1 = st.get(expr1);
-            OurSymbol sym2 = st.get(expr2);
-            Value     val1 = sym1.getValue();
-            Value     val2 = sym2.getValue();
-            String   type1 = val1.getType();
-            String   type2 = val2.getType();
+        {:
+            Value val1 = st.get(expr1).getValue();
+            Value val2 = st.get(expr2).getValue();
+
             if (val1.isInt() && val2.isInt()) {
-                Integer result = val1.getValue() - val2.getValue();
-                RESULT = st.addAnonVar(new Value(result));
+                RESULT = st.addAnonVar(new Value(val1.getIntValue() - val2.getIntValue()));
             }
             else {
-                throw Exception("Type error: operands are not integers.");
+                throw new Exception("Type error: one of the operands is not an integer.");
             }
         :}
     |   expression:expr1 MUL expression:expr2
         {: 
-            if (debug) System.out.println("S:09"); 
-            OurSymbol sym1 = st.get(expr1);
-            OurSymbol sym2 = st.get(expr2);
-            Value     val1 = sym1.getValue();
-            Value     val2 = sym2.getValue();
-            String   type1 = val1.getType();
-            String   type2 = val2.getType();
+            Value val1 = st.get(expr1).getValue();
+            Value val2 = st.get(expr2).getValue();
 
-            // TODO
             if (val1.isInt() && val2.isInt()) {
-                Integer result = val1.getValue() * val2.getValue();
+                RESULT = st.addAnonVar(new Value(val1.getIntValue() * val2.getIntValue()));
+            } else if (val1.isString() && val2.isInt()) {
+                String  result = val1.getStringValue();
+                int          m = val2.getIntValue().intValue();
+
+                for (int i = 0; i < m; i++) {
+                    result.concat(val1.getStringValue());
+                }
                 RESULT = st.addAnonVar(new Value(result));
-            }
-            if (val1.isString() && val2.isString()) {
-                String  result = val1.getValue() + val2.getValue();
+            } else if (val1.isInt() && val2.isString()) {
+                String  result = val2.getStringValue();
+                int          m = val1.getIntValue().intValue();
+
+                for (int i = 0; i < m; i++) {
+                    result.concat(val2.getStringValue());
+                }
                 RESULT = st.addAnonVar(new Value(result));
+            } else {
+                throw new Exception("Type error: at least one operand must be an integer.");
             }
         :}
     |   expression:expr1 DIV expression:expr2
         {: 
-            if (debug) System.out.println("S:10"); 
-            OurSymbol sym1 = st.get(expr1);
-            OurSymbol sym2 = st.get(expr2);
-            Value     val1 = sym1.getValue();
-            Value     val2 = sym2.getValue();
-            String   type1 = val1.getType();
-            String   type2 = val2.getType();
+            Value val1 = st.get(expr1).getValue();
+            Value val2 = st.get(expr2).getValue();
+
             if (val1.isInt() && val2.isInt()) {
-                // add the two integers
-                Integer result = val1.getValue() / val2.getValue();
-                RESULT = st.addAnonVar(new Value(result));
+                RESULT = st.addAnonVar(new Value(val1.getIntValue() / val2.getIntValue()));
             }
             else {
-                throw Exception("Type error: operands are not integers.");
+                throw new Exception("Type error: operands are not integers.");
             }
         :}
     |   ADD expression:expr
@@ -216,25 +220,21 @@ expression
              * If the value is a string, there is nothing to concatenate
              * with, although strictly it should emit an error. 
              */
-            if (debug) System.out.println("S:11");
             RESULT = expr;
         :}
     |   SUB expression:expr
         {: 
-            if (debug) System.out.println("S:12");
-            OurSymbol sym = st.get(expr);
-            if (! sym.getValue().isInt())
+            Value val = st.get(expr).getValue();
+            if (! val.isInt())
                 throw new Exception("Type error: trying to change sign of a non-integer value.");
-            RESULT = st.addAnonVar(new Value( - (Integer)sym.getValue().getValue()) );
+            RESULT = st.addAnonVar(new Value( - val.getIntValue()) );
         :}
     |   PAREN_OPEN expression:expr PAREN_CLOSE
         {: 
-            if (debug) System.out.println("S:13");
             RESULT = expr; 
         :}
     |   postfix_expression:pfexpr
         {: 
-            if (debug) System.out.println("S:14");
             RESULT = pfexpr;
         :}
     ;
@@ -243,63 +243,71 @@ postfix_expression
     ::= IDENTIFIER:id
         slice:slc
         {: 
-            if (debug) System.out.println("S:15");
+            if (! st.isDeclared(id))
+                throw new Exception("Unknown variable: " + id);
             if (slc == null) {
-                if (! st.isDeclared(id))
-                    throw new Exception("Unknown variable: " + id);
                 RESULT = id;
             }
             else {
-                RESULT = id;
+                Value val = st.get(id).getValue();
+
+                if (! val.isString()) {
+                    throw new Exception("Slices can only be applied to string values.");
+                }
+                if (slc.index2 >= val.getStringValue().length()) {
+                    throw new Exception("Slice index "+slc.index2+" out of range in string \""+id+"\"");
+                }
+                RESULT = st.addAnonVar(new Value(val.getStringValue().substring(slc.index1, slc.index2)));
             }
         :}
     |   INTEGER:intgr
         {: 
-            if (debug) System.out.println("S:16");
             RESULT = st.addAnonVar(new Value(intgr));
         :}
     |   STRING:strng
+        slice:slc
         {: 
-            if (debug) System.out.println("S:17"); 
-            RESULT = st.addAnonVar(new Value(strng));
+            if (slc == null) {
+                RESULT = st.addAnonVar(new Value(strng));
+            }
+            else {
+                RESULT = strng;
+            }
         :}
     |   STR
         expression:expr
         {: 
-            /* First, we check whether the result of evaluating the 
-             * expression expr is in the symbol table.
-             * It always should be, otherwise a parse error ocurred.
-             * Next, we get the corresponding symbol, extract its value, 
-             * convert it into a string, and put the result in an 
-             * anonymous variable in the symbol table.
-             */
-            if (debug) System.out.println("S:18");
-            OurSymbol sym = st.get(expr);
-            Value     val = sym.getValue();
-            String    str = val.toString();
-            RESULT = st.addAnonVar(new Value(str));
+            RESULT = st.addAnonVar(new Value(st.get(expr).getValue().toString()));
         :}
     ;
 
 slice
-    ::= BRACE_OPEN expression:expr slice_expression:sexpr BRACE_CLOSE
+    ::= BRACE_OPEN expression:fexpr slice_expression:sexpr BRACE_CLOSE
         {: 
-            if (debug) System.out.println("S:19");
             if (sexpr == null) {
-                RETURN = expr;
+                Value     val1 = st.get(fexpr).getValue();
+                Integer   int1 = val1.getIntValue();
+                if (! val1.isInt()) {
+                    throw new Exception("Type error: slice expression must evaluate to integer.");
+                }
+                RESULT = new RangeValue(int1, int1);
             }
             else {
-                OurSymbol sym1 = st.get(expr);
-                OurSymbol sym2 = st.get(slice_expression);
-                Value     val1 = sym1.getValue();
-                Value     val2 = sym2.getValue();
-                if (! val1.isInt()) {
-                    throw Exception("");
+                Value   val1 = st.get(fexpr).getValue();
+                Value   val2 = st.get(sexpr).getValue();
+                Integer int1 = val1.getIntValue();
+                Integer int2 = val2.getIntValue();
+                
+                if (! (val1.isInt() && val2.isInt())) {
+                    throw new Exception("Type error: both slice expressions must evaluate to integers.");
                 }
-                if (! val2.isInt()) {
-                    throw Exception("");
+                if (! (int1 >= 0 && int2 >= 0)) {
+                    throw new Exception("Error: slice expressions must evaluate to non negative integers.");
                 }
-                RETURN = RangeValue(0, 0);
+                if (int1 > int2) {
+                    throw new Exception("Error: the first slice expression must evaluate to a non negative integer value smaller than the second slice expression's value.");
+                }
+                RESULT = new RangeValue(int1, int2);                
             }
         :}
     |
@@ -308,8 +316,7 @@ slice
 slice_expression
     ::= COLON expression:expr
         {:
-            if (debug) System.out.println("S:20"); 
-            RETURN = expr;
+            RESULT = expr;
         :}
     |
     ;

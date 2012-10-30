@@ -40,7 +40,12 @@ print        { /* System.out.println("L:PRINT      "); */ return new Symbol(sym.
 "="          { /* System.out.println("L:ASS        "); */ return new Symbol(sym.ASS,         yyline, 0); }
 "+="         { /* System.out.println("L:ASS_ADD    "); */ return new Symbol(sym.ASS_ADD,     yyline, 0); }
 "*="         { /* System.out.println("L:ASS_MUL    "); */ return new Symbol(sym.ASS_MUL,     yyline, 0); }
-{STRING}     { /* System.out.println("L:STRING     "); */ return new Symbol(sym.STRING,      yyline, 0, yytext()); }
+{STRING}     { 
+                /* System.out.println("L:STRING     "); */ 
+                String lexeme = yytext();
+                String sval = lexeme.substring(1, lexeme.length()-1);
+                return new Symbol(sym.STRING, yyline, 0, sval); 
+             }
 {IDENTIFIER} { /* System.out.println("L:IDENTIFIER "); */ return new Symbol(sym.IDENTIFIER,  yyline, 0, yytext()); }
 {INTLITERAL} { /* System.out.println("L:INTEGER    "); */ return new Symbol(sym.INTEGER,     yyline, 0, new Integer(yytext())); }
 .            { throw new Exception("Lexical error: " + yytext() + " on line: " + (yyline + 1)); }

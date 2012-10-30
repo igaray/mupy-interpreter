@@ -3,6 +3,7 @@ package MuPy;
 import java.security.SecureRandom;
 import java.math.BigInteger;
 import java.util.LinkedList;
+import java.util.Iterator;
 
 class RangeValue {
 
@@ -22,6 +23,7 @@ class Value {
     private Integer ivalue = new Integer(0);
 
     public Value(String  v) { type = "string"; svalue = v; }
+    
     public Value(Integer v) { type = "int";    ivalue = v; }
 
     public String getType()  { return type; }
@@ -33,6 +35,10 @@ class Value {
         if (type == "int"   ) { o = ivalue; }
         return o;
     }
+
+    public String  getStringValue() { return svalue; }
+
+    public Integer getIntValue()    { return ivalue; }
 
     public String toString() {
         String s = null;
@@ -147,6 +153,22 @@ class SymbolTable {
         table.get(pos).setValue(value);
     }
 
+    public void clearAnonVars() { 
+        OurSymbol sym;
+        int i = 0;
+        int m = table.size();
+        while (i < m) {
+            sym = table.get(i);
+            if (sym.getName().startsWith("__anon")) {
+                table.remove(i);
+                m = table.size();
+            }
+            else {
+                i++;
+            }
+        }
+    }
+
     public void print() {
 
         int nameMaxLength = 0, valueMaxLength = 0;
@@ -191,5 +213,6 @@ class SymbolTable {
             x = symbolStrings.get(i);            
             System.out.print(String.format("%-"+nameMaxLength+"s\t| %-6s | %-"+valueMaxLength+"s\n", x[0], x[1], x[2]));
         }
+        System.out.println();
     }
-}
+}   

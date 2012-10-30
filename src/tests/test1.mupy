@@ -19,5 +19,18 @@ id = 1 * 2
 id = 1 / 2
 id = 1 + 2 + 3
 id = 1 + 2 * 3
-id = id[2]
+id1 = 21
+id2 = 21
+id3 = id1 + id2
+print id3
+print id
+id = "a string"
+id2 = id[2:6]
+print id2
+id = 1
+id = 2
+print 42
+id2 = 66
+id2 = id
+print id2
 .
